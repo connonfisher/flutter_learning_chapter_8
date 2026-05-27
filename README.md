@@ -368,3 +368,84 @@ flutter run -t lib/chapter8/gesture_conflict.dart
 ```
 
 ---
+
+## 8.5 全局事件总线
+
+> 原文链接：[https://book.flutterchina.club/chapter8/eventbus.html](https://book.flutterchina.club/chapter8/eventbus.html)
+
+### 功能介绍
+
+| 知识点 | 说明 |
+|--------|------|
+| `EventBus` 单例 | `static` + 工厂构造函数保证全局唯一实例 |
+| `on` 订阅 | 注册事件名对应的回调函数 |
+| `off` 取消订阅 | 移除指定事件名和回调（注意 dispose 时清理） |
+| `emit` 触发 | 反向遍历订阅者列表，防止移除自身导致的错位 |
+
+### 演示效果
+
+| 代码截图 | 运行效果 |
+|---------|---------|
+| ![代码](assets/演示截图/8.5%20全局事件总线-代码.png) | ![运行](assets/演示截图/8.5%20全局事件总线-运行效果.png) |
+
+### 核心代码示例
+
+**EventBus 实现**
+
+```dart
+typedef EventCallback = void Function(dynamic arg);
+
+class EventBus {
+  EventBus._internal();
+  static final EventBus _singleton = EventBus._internal();
+  factory EventBus() => _singleton;
+
+  final Map<Object, List<EventCallback>?> _emap = {};
+
+  void on(Object eventName, EventCallback f) {
+    _emap[eventName] ??= <EventCallback>[];
+    _emap[eventName]!.add(f);
+  }
+
+  void off(Object eventName, [EventCallback? f]) {
+    final list = _emap[eventName];
+    if (list == null) return;
+    if (f == null) {
+      _emap[eventName] = null;
+    } else {
+      list.remove(f);
+    }
+  }
+
+  void emit(Object eventName, [dynamic arg]) {
+    final list = _emap[eventName];
+    if (list == null) return;
+    for (var i = list.length - 1; i >= 0; i--) {
+      list[i](arg);
+    }
+  }
+}
+
+final bus = EventBus();
+```
+
+**使用示例**
+
+```dart
+// 页面A — 订阅
+bus.on('login', (arg) => setState(() => _msg = '收到: $arg'));
+
+// 页面B — 触发
+bus.emit('login', '用户已登录');
+
+// 页面A dispose 时务必取消订阅
+bus.off('login', _onLogin);
+```
+
+### 独立运行
+
+```bash
+flutter run -t lib/chapter8/event_bus.dart
+```
+
+---
