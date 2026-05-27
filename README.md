@@ -35,6 +35,59 @@ lib/
 
 每个小节文件均可独立运行（含 `main()` 入口），也可从首页目录导航进入。
 
+## 目录导航主页
+
+`main.dart` 提供章节总览入口，6 张卡片列出全部小节，点击即可导航进入对应页面。
+
+| 代码截图 | 运行效果 |
+|---------|---------|
+| ![代码](assets/演示截图/目录导航-代码.png) | ![运行](assets/演示截图/目录导航-运行效果.png) |
+
+### 核心实现
+
+```dart
+class Chapter8Home extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Flutter 事件处理与通知')),
+      body: ListView.separated(
+        itemCount: sections.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          final section = sections[index];
+          return Card(
+            child: InkWell(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: section.builder),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(section.title, style: const TextStyle(...)),
+                          Text(section.keywords, style: TextStyle(...)),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
 ---
 
 ## 8.1 原始指针事件处理
