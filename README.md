@@ -288,3 +288,83 @@ flutter run -t lib/chapter8/hit_test.dart
 ```
 
 ---
+
+## 8.4 手势原理与手势冲突
+
+> 原文链接：[https://book.flutterchina.club/chapter8/gesture_conflict.html](https://book.flutterchina.club/chapter8/gesture_conflict.html)
+
+### 功能介绍
+
+| 知识点 | 说明 |
+|--------|------|
+| 嵌套 GestureDetector 竞争 | 子优先原则，子组件胜出 |
+| 水平/垂直方向竞争 | 首次移动位移分量大的方向获胜 |
+| Listener 解决冲突 | 跳出 GestureDetector 手势竞技场机制 |
+| 自定义 Recognizer | 重写 `rejectGesture` 强制接受手势 |
+
+### 演示效果
+
+| 代码截图 | 运行效果 |
+|---------|---------|
+| ![代码](assets/演示截图/8.4%20手势原理与手势冲突-代码.png) | ![运行](assets/演示截图/8.4%20手势原理与手势冲突-运行效果.png) |
+
+### 核心代码示例
+
+**嵌套竞争（子组件优先）**
+
+```dart
+GestureDetector(
+  onTapUp: (_) => print('父未响应'),
+  child: Container(width: 200, height: 200, color: Colors.red,
+    child: GestureDetector(
+      onTapUp: (_) => print('子胜出'),
+      child: Container(width: 60, height: 60, color: Colors.grey),
+    ),
+  ),
+)
+```
+
+**Listener 解决冲突（父和子都响应）**
+
+```dart
+Listener(
+  onPointerUp: (_) => print('父: 响应'),
+  child: GestureDetector(
+    onTap: () => print('子: 也响应'),
+    child: Container(width: 60, height: 60, color: Colors.grey),
+  ),
+)
+```
+
+**自定义 Recognizer 解决冲突**
+
+```dart
+class CustomTapGestureRecognizer extends TapGestureRecognizer {
+  @override
+  void rejectGesture(int pointer) {
+    acceptGesture(pointer); // 强制接受
+  }
+}
+
+RawGestureDetector(
+  gestures: {
+    CustomTapGestureRecognizer:
+        GestureRecognizerFactoryWithHandlers<CustomTapGestureRecognizer>(
+      () => CustomTapGestureRecognizer(),
+      (detector) { detector.onTap = () => print('父也响应'); },
+    ),
+  },
+  child: GestureDetector(
+    onTap: () => print('子响应'),
+    child: Container(...),
+  ),
+)
+```
+
+### 独立运行
+
+```bash
+flutter run -t lib/chapter8/gesture_conflict.dart
+```
+
+---
