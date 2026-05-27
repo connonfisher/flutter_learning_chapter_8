@@ -204,3 +204,87 @@ flutter run -t lib/chapter8/gesture.dart
 ```
 
 ---
+
+## 8.3 Flutter事件机制
+
+> 原文链接：[https://book.flutterchina.club/chapter8/hittest.html](https://book.flutterchina.club/chapter8/hittest.html)
+
+### 功能介绍
+
+| 知识点 | 说明 |
+|--------|------|
+| `HitTestBehavior.deferToChild` | 命中测试取决于子组件 |
+| `HitTestBehavior.opaque` | 始终通过命中测试，`hitTest` 返回 true |
+| `HitTestBehavior.translucent` | 始终通过命中测试，可透传到兄弟节点 |
+| `WaterMark` 水印 | Stack + IgnorePointer + CustomPaint 实现全屏水印 |
+
+### 演示效果
+
+| 代码截图 | 运行效果 |
+|---------|---------|
+| ![代码](assets/演示截图/8.3%20Flutter事件机制-代码.png) | ![运行](assets/演示截图/8.3%20Flutter事件机制-运行效果.png) |
+
+### 核心代码示例
+
+**HitTestBehavior 三种模式**
+
+```dart
+Listener(
+  behavior: HitTestBehavior.deferToChild, // opaque / translucent
+  onPointerDown: (_) => print('Listener 收到事件'),
+  child: Container(
+    height: 60,
+    color: Colors.blue.shade100,
+    alignment: Alignment.center,
+    child: Text('点击测试'),
+  ),
+)
+```
+
+**WaterMark 水印实现**
+
+```dart
+Stack(
+  children: [
+    // 页面内容...
+    IgnorePointer(
+      child: CustomPaint(
+        size: const Size(double.infinity, double.infinity),
+        painter: _WaterMarkPainter(),
+      ),
+    ),
+  ],
+)
+
+class _WaterMarkPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final textPainter = TextPainter(
+      text: TextSpan(text: 'Flutter 水印',
+        style: TextStyle(color: Colors.grey.withValues(alpha: 0.15))),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    for (double y = 0; y < size.height; y += textPainter.height + 40) {
+      for (double x = 0; x < size.width; x += textPainter.width + 60) {
+        canvas.save();
+        canvas.translate(x, y);
+        canvas.rotate(0.3);
+        textPainter.paint(canvas, Offset.zero);
+        canvas.restore();
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+```
+
+### 独立运行
+
+```bash
+flutter run -t lib/chapter8/hit_test.dart
+```
+
+---
