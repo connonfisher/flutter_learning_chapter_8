@@ -449,3 +449,75 @@ flutter run -t lib/chapter8/event_bus.dart
 ```
 
 ---
+
+## 8.6 通知 Notification
+
+> 原文链接：[https://book.flutterchina.club/chapter8/notification.html](https://book.flutterchina.club/chapter8/notification.html)
+
+### 功能介绍
+
+| 知识点 | 说明 |
+|--------|------|
+| `NotificationListener` | 监听子树向上冒泡的通知 |
+| `ScrollNotification` | Flutter 内置滚动通知（开始/更新/结束/边界） |
+| 自定义通知 | 继承 `Notification`，调用 `dispatch(context)` 发送 |
+| 阻止冒泡 | `onNotification` 返回 `true` 终止向上传递 |
+
+### 演示效果
+
+| 代码截图 | 运行效果 |
+|---------|---------|
+| ![代码](assets/演示截图/8.6%20通知%20Notification-代码.png) | ![运行](assets/演示截图/8.6%20通知%20Notification-运行效果.png) |
+
+### 核心代码示例
+
+**监听滚动通知**
+
+```dart
+NotificationListener<ScrollNotification>(
+  onNotification: (notification) {
+    if (notification is ScrollStartNotification) print('开始滚动');
+    else if (notification is ScrollUpdateNotification) print('正在滚动');
+    else if (notification is ScrollEndNotification) print('滚动停止');
+    return false; // 不阻止冒泡
+  },
+  child: ListView.builder(itemCount: 100, ...),
+)
+```
+
+**自定义通知 & 发送**
+
+```dart
+class MyNotification extends Notification {
+  MyNotification(this.msg);
+  final String msg;
+}
+
+// 在按钮点击时触发
+Builder(
+  builder: (context) => ElevatedButton(
+    onPressed: () => MyNotification('Hi').dispatch(context),
+    child: const Text('发送通知'),
+  ),
+)
+```
+
+**嵌套 NotificationListener 与阻止冒泡**
+
+```dart
+NotificationListener<MyNotification>(
+  onNotification: (n) { print('外层收到: ${n.msg}'); return false; },
+  child: NotificationListener<MyNotification>(
+    onNotification: (n) { print('内层收到: ${n.msg}'); return true; }, // true = 阻止冒泡
+    child: ElevatedButton(...),
+  ),
+)
+```
+
+### 独立运行
+
+```bash
+flutter run -t lib/chapter8/notification.dart
+```
+
+---
