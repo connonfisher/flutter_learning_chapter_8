@@ -108,11 +108,99 @@ Listener(
 ### 独立运行
 
 ```bash
-# 运行整个项目（从目录页进入）
-flutter run
-
-# 或单独运行本节
 flutter run -t lib/chapter8/listener.dart
+```
+
+---
+
+## 8.2 手势识别
+
+> 原文链接：[https://book.flutterchina.club/chapter8/gesture.html](https://book.flutterchina.club/chapter8/gesture.html)
+
+### 功能介绍
+
+| 知识点 | 说明 |
+|--------|------|
+| 点击/双击/长按 | `onTap` / `onDoubleTap` / `onLongPress` |
+| 自由拖动 | `onPanUpdate` 获取 `delta` 位移 |
+| 单一方向拖动 | `onVerticalDragUpdate` / `onHorizontalDragUpdate` |
+| 缩放 | `onScaleUpdate` 获取 `scale` 倍数 |
+| GestureRecognizer | 给 `TextSpan` 添加点击识别器 |
+
+### 演示效果
+
+| 代码截图 | 运行效果 |
+|---------|---------|
+| ![代码](assets/演示截图/8.2%20手势识别-代码.png) | ![运行](assets/演示截图/8.2%20手势识别-运行效果.png) |
+
+### 核心代码示例
+
+**点击 / 双击 / 长按**
+
+```dart
+GestureDetector(
+  child: Container(
+    alignment: Alignment.center,
+    color: Colors.blue,
+    width: 200.0,
+    height: 100.0,
+    child: Text(_operation, style: const TextStyle(color: Colors.white)),
+  ),
+  onTap: () => updateText('Tap'),
+  onDoubleTap: () => updateText('DoubleTap'),
+  onLongPress: () => updateText('LongPress'),
+)
+```
+
+**自由拖动**
+
+```dart
+GestureDetector(
+  child: const CircleAvatar(child: Text('A')),
+  onPanUpdate: (DragUpdateDetails e) {
+    setState(() {
+      _left += e.delta.dx;
+      _top += e.delta.dy;
+    });
+  },
+)
+```
+
+**缩放**
+
+```dart
+GestureDetector(
+  child: Container(width: _width, height: _width * 0.6, color: Colors.teal),
+  onScaleUpdate: (ScaleUpdateDetails details) {
+    setState(() {
+      _width = 200 * details.scale.clamp(0.8, 10.0);
+    });
+  },
+)
+```
+
+**TextSpan + GestureRecognizer**
+
+```dart
+Text.rich(
+  TextSpan(
+    children: [
+      const TextSpan(text: '你好世界 '),
+      TextSpan(
+        text: '点我变色',
+        style: TextStyle(fontSize: 30.0, color: _toggle ? Colors.blue : Colors.red),
+        recognizer: _tapGestureRecognizer..onTap = () => setState(() => _toggle = !_toggle),
+      ),
+      const TextSpan(text: ' 你好世界'),
+    ],
+  ),
+)
+```
+
+### 独立运行
+
+```bash
+flutter run -t lib/chapter8/gesture.dart
 ```
 
 ---
